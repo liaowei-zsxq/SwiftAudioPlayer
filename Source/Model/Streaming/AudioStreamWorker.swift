@@ -317,6 +317,7 @@ extension AudioStreamWorker: URLSessionDataDelegate {
             Log.monitor("\(task.currentRequest?.url?.absoluteString ?? "nil url") error: \(err.localizedDescription)")
 
             _ = doneCallback(id, err)
+            return
         }
 
         let shouldSave = doneCallback(id, nil)
