@@ -168,7 +168,10 @@ extension LockScreenViewProtocol {
     }
 
     func updateLockscreenSkipIntervals() {
-        MPRemoteCommandCenter.shared().skipBackwardCommand.preferredIntervals = [skipBackwardSeconds] as [NSNumber]
-        MPRemoteCommandCenter.shared().skipForwardCommand.preferredIntervals = [skipForwardSeconds] as [NSNumber]
+        let commandCenter = MPRemoteCommandCenter.shared()
+        commandCenter.skipBackwardCommand.isEnabled = skipBackwardSeconds > 0
+        commandCenter.skipBackwardCommand.preferredIntervals = [skipBackwardSeconds] as [NSNumber]
+        commandCenter.skipForwardCommand.isEnabled = skipForwardSeconds > 0
+        commandCenter.skipForwardCommand.preferredIntervals = [skipForwardSeconds] as [NSNumber]
     }
 }
