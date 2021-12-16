@@ -477,7 +477,6 @@ extension SAPlayer {
      - Parameter mediaInfo: The media information of the audio to show on the lockscreen media player (optional).
      */
     public func startRemoteAudio(withRemoteUrl url: URL, bitrate: SAPlayerBitrate = .high, mediaInfo: SALockScreenInfo? = nil) {
-        
         // Because we support queueing, we want to clear off any existing players.
         // Therefore, instantiate new player every time, destroy any existing ones.
         // This prevents a crash where an owning engine already exists.

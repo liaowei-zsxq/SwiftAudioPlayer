@@ -215,7 +215,7 @@ extension SAPlayer {
             public static func subscribe(_ closure: @escaping (_ buffer: SAAudioAvailabilityRange) -> ()) -> UInt {
                 return AudioClockDirector.shared.attachToChangesInBufferedRange(closure: closure)
             }
-            
+
             /**
              Stop recieving updates of changes in streaming progress.
              
@@ -223,6 +223,16 @@ extension SAPlayer {
              */
             public static func unsubscribe(_ id: UInt) {
                 AudioClockDirector.shared.detachFromChangesInBufferedRange(withID: id)
+            }
+        }
+
+        public struct AudioStreamParser {
+            public static func subscribe(_ closure: @escaping (ParserError) throws -> Void) -> UInt {
+                return AudioClockDirector.shared.attachToChangesInStreamParserError(closure: closure)
+            }
+
+            public static func unsubscribe(_ id: UInt) {
+                AudioClockDirector.shared.detachFromChangesInStreamParserError(withID: id)
             }
         }
         

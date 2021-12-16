@@ -32,13 +32,28 @@
 import Foundation
 import AVFoundation
 
-enum ParserError: LocalizedError {
+public enum ParserError: LocalizedError {
     case couldNotOpenStream
     case failedToParseBytes(OSStatus)
     case notEnoughDataForReader
     case readerAskingBeyondEndOfFile
+
+    public var errorDomain: String { "SwiftAudioPlayer.ParserError" }
+
+    public var errorCode: Int {
+        switch self {
+        case .couldNotOpenStream:
+            return -1
+        case .failedToParseBytes(let status):
+            return Int(status)
+        case .notEnoughDataForReader:
+            return -2
+        case .readerAskingBeyondEndOfFile:
+            return -3
+        }
+    }
     
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .couldNotOpenStream:
             return "Could not open stream for parsing"

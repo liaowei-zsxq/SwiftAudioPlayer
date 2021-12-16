@@ -27,16 +27,38 @@ import Foundation
 import MediaPlayer
 import UIKit
 
+public protocol LockScreenViewPresenter : AnyObject {
+
+    func getIsPlaying() -> Bool
+
+    func handlePlay()
+
+    func handlePause()
+
+    func handleSkipBackward()
+
+    func handleSkipForward()
+
+    func handleSeek(toNeedle needle: Needle)
+}
+
 // MARK: - Set up lockscreen audio controls
 // Documentation: https://developer.apple.com/documentation/avfoundation/media_assets_playback_and_editing/creating_a_basic_video_player_ios_and_tvos/controlling_background_audio
-protocol LockScreenViewProtocol {
+public protocol LockScreenViewProtocol {
     var skipForwardSeconds: Double { get set }
     var skipBackwardSeconds: Double { get set }
 }
 
-extension LockScreenViewProtocol {
+public extension LockScreenViewProtocol {
     func clearLockScreenInfo() {
-         MPNowPlayingInfoCenter.default().nowPlayingInfo = [:]
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = [:]
+
+        let commandCenter = MPRemoteCommandCenter.shared()
+        commandCenter.playCommand.removeTarget(nil)
+        commandCenter.pauseCommand.removeTarget(nil)
+        //commandCenter.skipForwardCommand.removeTarget(nil)
+        //commandCenter.skipBackwardCommand.removeTarget(nil)
+        commandCenter.changePlaybackPositionCommand.removeTarget(nil)
     }
     
     @available(iOS 10.0, tvOS 10.0, *)
@@ -82,7 +104,7 @@ extension LockScreenViewProtocol {
     }
     
     // https://stackoverflow.com/questions/36754934/update-mpremotecommandcenter-play-pause-button
-    func setLockScreenControls(presenter: SAPlayerPresenter) { //FIXME: this is weird
+    func setLockScreenControls(presenter: LockScreenViewPresenter) { //FIXME: this is weird
         // Get the shared MPRemoteCommandCenter
         let commandCenter = MPRemoteCommandCenter.shared()
         
@@ -91,12 +113,12 @@ extension LockScreenViewProtocol {
             guard let presenter = presenter else {
                 return .commandFailed
             }
-            
+
             if !presenter.getIsPlaying() {
                 presenter.handlePlay()
                 return .success
             }
-            
+
             return .commandFailed
         }
         
@@ -105,33 +127,33 @@ extension LockScreenViewProtocol {
             guard let presenter = presenter else {
                 return .commandFailed
             }
-            
+
             if presenter.getIsPlaying() {
                 presenter.handlePause()
                 return .success
             }
-            
+
             return .commandFailed
         }
         
-        commandCenter.skipBackwardCommand.preferredIntervals = [skipBackwardSeconds] as [NSNumber]
-        commandCenter.skipForwardCommand.preferredIntervals = [skipForwardSeconds] as [NSNumber]
+        //commandCenter.skipBackwardCommand.preferredIntervals = [skipBackwardSeconds] as [NSNumber]
+        //commandCenter.skipForwardCommand.preferredIntervals = [skipForwardSeconds] as [NSNumber]
         
-        commandCenter.skipBackwardCommand.addTarget { [weak presenter] event in
-            guard let presenter = presenter else {
-                return .commandFailed
-            }
-            presenter.handleSkipBackward()
-            return .success
-        }
-        
-        commandCenter.skipForwardCommand.addTarget { [weak presenter] event in
-            guard let presenter = presenter else {
-                return .commandFailed
-            }
-            presenter.handleSkipForward()
-            return .success
-        }
+//        commandCenter.skipBackwardCommand.addTarget { [weak presenter] event in
+//            guard let presenter = presenter else {
+//                return .commandFailed
+//            }
+//            presenter.handleSkipBackward()
+//            return .success
+//        }
+//
+//        commandCenter.skipForwardCommand.addTarget { [weak presenter] event in
+//            guard let presenter = presenter else {
+//                return .commandFailed
+//            }
+//            presenter.handleSkipForward()
+//            return .success
+//        }
         
         commandCenter.changePlaybackPositionCommand.addTarget { [weak presenter] event in
             guard let presenter = presenter else {
@@ -141,7 +163,7 @@ extension LockScreenViewProtocol {
                 presenter.handleSeek(toNeedle: Needle(positionEvent.positionTime))
                 return .success
             }
-            
+
             return .commandFailed
         }
     }
@@ -169,10 +191,10 @@ extension LockScreenViewProtocol {
     }
     
     func updateLockscreenSkipIntervals() {
-        let commandCenter = MPRemoteCommandCenter.shared()
-        commandCenter.skipBackwardCommand.isEnabled = skipBackwardSeconds > 0
-        commandCenter.skipBackwardCommand.preferredIntervals = [skipBackwardSeconds] as [NSNumber]
-        commandCenter.skipForwardCommand.isEnabled = skipForwardSeconds > 0
-        commandCenter.skipForwardCommand.preferredIntervals = [skipForwardSeconds] as [NSNumber]
+//        let commandCenter = MPRemoteCommandCenter.shared()
+//        commandCenter.skipBackwardCommand.isEnabled = skipBackwardSeconds > 0
+//        commandCenter.skipBackwardCommand.preferredIntervals = [skipBackwardSeconds] as [NSNumber]
+//        commandCenter.skipForwardCommand.isEnabled = skipForwardSeconds > 0
+//        commandCenter.skipForwardCommand.preferredIntervals = [skipForwardSeconds] as [NSNumber]
     }
 }

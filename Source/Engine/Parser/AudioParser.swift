@@ -171,7 +171,7 @@ class AudioParser: AudioParsable {
         
         let context = unsafeBitCast(self, to: UnsafeMutableRawPointer.self)
         //Open the stream and when we call parse data is fed into this stream
-        guard AudioFileStreamOpen(context, ParserPropertyListener, ParserPacketListener, kAudioFileMP3Type, &streamID) == noErr else {
+        guard AudioFileStreamOpen(context, ParserPropertyListener, ParserPacketListener, 0, &streamID) == noErr else {
             throw ParserError.couldNotOpenStream
         }
     }
@@ -349,12 +349,24 @@ class AudioParser: AudioParsable {
                 _ = try data.accessBytes({ (bytes: UnsafePointer<UInt8>) in
                     let result:OSStatus = AudioFileStreamParseBytes(sID, UInt32(dataSize), bytes, [])
                     guard result == noErr else {
+                        if result == kAudioFileStreamError_NotOptimized ||
+                            result == kAudioFileStreamError_InvalidFile {
+                            self.throttler.invalidate()
+                        }
+
                         Log.monitor(ParserError.failedToParseBytes(result).errorDescription as Any)
                         throw ParserError.failedToParseBytes(result)
                     }
                 })
             } catch {
                 Log.monitor(error.localizedDescription)
+
+                if let error = error as? ParserError {
+                    DispatchQueue.main.sync { [weak self] in
+                        guard let self = self else { return }
+                        AudioClockDirector.shared.changeInStreamParserError(self.url.key, error: error)
+                    }
+                }
             }
         }
     }

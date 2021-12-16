@@ -27,7 +27,8 @@ import Foundation
 import AVFoundation
 import MediaPlayer
 
-class SAPlayerPresenter {
+class SAPlayerPresenter : LockScreenViewPresenter {
+
     weak var delegate: SAPlayerDelegate?
     var shouldPlayImmediately = false //for auto-play
     
@@ -46,9 +47,7 @@ class SAPlayerPresenter {
     
     init(delegate: SAPlayerDelegate?) {
         self.delegate = delegate
-        
-        delegate?.setLockScreenControls(presenter: self)
-        
+                
         durationRef = AudioClockDirector.shared.attachToChangesInDuration(closure: { [weak self] (duration) in
             guard let self = self else { throw DirectorError.closureIsDead }
             
@@ -107,11 +106,13 @@ class SAPlayerPresenter {
     func handlePlaySavedAudio(withSavedUrl url: URL) {
         resetCacheForNewAudio(url: url)
         delegate?.startAudioDownloaded(withSavedUrl: url)
+        delegate?.setLockScreenControls(presenter: self)
     }
     
     func handlePlayStreamedAudio(withRemoteUrl url: URL, bitrate: SAPlayerBitrate) {
         resetCacheForNewAudio(url: url)
         delegate?.startAudioStreamed(withRemoteUrl: url, bitrate: bitrate)
+        delegate?.setLockScreenControls(presenter: self)
     }
     
     private func resetCacheForNewAudio(url: URL) {

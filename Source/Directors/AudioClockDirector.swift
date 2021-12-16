@@ -39,7 +39,8 @@ class AudioClockDirector {
     private var durationClosures: DirectorThreadSafeClosures<Duration> = DirectorThreadSafeClosures()
     private var playingStatusClosures: DirectorThreadSafeClosures<SAPlayingStatus> = DirectorThreadSafeClosures()
     private var bufferClosures: DirectorThreadSafeClosures<SAAudioAvailabilityRange> = DirectorThreadSafeClosures()
-    
+    private var errorClosures: DirectorThreadSafeClosures<ParserError> = DirectorThreadSafeClosures()
+
     private init() {}
     
     func setKey(_ key: Key) {
@@ -109,7 +110,10 @@ class AudioClockDirector {
     func attachToChangesInBufferedRange(closure: @escaping (SAAudioAvailabilityRange) throws -> Void) -> UInt{
         return bufferClosures.attach(closure: closure)
     }
-    
+
+    func attachToChangesInStreamParserError(closure: @escaping (ParserError) throws -> Void) -> UInt{
+        return errorClosures.attach(closure: closure)
+    }
     
     // MARK: - Detaches
     func detachFromChangesInNeedle(withID id: UInt) {
@@ -130,6 +134,10 @@ class AudioClockDirector {
     func detachFromChangesInBufferedRange(withID id: UInt) {
         depBufferClosures.detach(id: id)
         bufferClosures.detach(id: id)
+    }
+
+    func detachFromChangesInStreamParserError(withID id: UInt) {
+        errorClosures.detach(id: id)
     }
 }
 
@@ -175,5 +183,16 @@ extension AudioClockDirector {
         }
         depBufferClosures.broadcast(key: key, payload: buffered)
         bufferClosures.broadcast(payload: buffered)
+    }
+}
+
+extension AudioClockDirector {
+    func changeInStreamParserError(_ key: Key, error: ParserError) {
+        guard key == currentAudioKey else {
+            Log.debug("silence old updates")
+            return
+        }
+
+        errorClosures.broadcast(payload: error)
     }
 }

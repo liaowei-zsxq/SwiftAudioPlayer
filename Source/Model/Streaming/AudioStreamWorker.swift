@@ -92,7 +92,7 @@ class AudioStreamWorker:NSObject, AudioDataStreamable {
         self.doneCallback = doneCallback
         super.init()
         
-        let config = URLSessionConfiguration.background(withIdentifier: "SwiftAudioPlayer.stream")
+        let config: URLSessionConfiguration = .default //.background(withIdentifier: "SwiftAudioPlayer.stream")
         // Specifies that the phone should keep trying till it receives connection instead of dropping immediately
         if #available(iOS 11.0, tvOS 11.0, *) {
             config.waitsForConnectivity = true
